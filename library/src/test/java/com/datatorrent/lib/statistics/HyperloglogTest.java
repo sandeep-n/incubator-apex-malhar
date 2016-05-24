@@ -76,6 +76,7 @@ public class HyperloglogTest
      * Repeat with a different value of standard deviation.
      */
     hll.setup(null);
+
     hll.setNumStdDevs(3.0);
     hll.beginWindow(0);
 

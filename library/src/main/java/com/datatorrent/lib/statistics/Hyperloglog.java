@@ -46,7 +46,7 @@ public class Hyperloglog extends BaseOperator
 
   /**
    * Output port that emits number of distinct elements seen in stream so far, with error bars.
-   * Output is of the form []
+   * Output is of the form {}
    */
   public final transient DefaultOutputPort<double[]> countDistinct = new DefaultOutputPort<>();
 
@@ -54,11 +54,12 @@ public class Hyperloglog extends BaseOperator
    * Input port takes a string. Data should be appropriately formatted, e.g., "126.0" and "126.00" are different strings
    * representing the same number, so care should be taken to avoid overcounting.
    */
-  public final transient DefaultInputPort<String> data = new DefaultInputPort<String>()
+  public final transient DefaultInputPort<Object> data = new DefaultInputPort<Object>()
   {
     @Override
-    public void process(String input)
+    public void process(Object input)
     {
+
       hllSketch.update(input);
 
       double[] estimateWithError = {hllSketch.getEstimate(), hllSketch.getLowerBound(numStdDevs),
