@@ -329,6 +329,11 @@
       <artifactId>apex-shaded-ning19</artifactId>
       <version>1.0.0</version>
     </dependency>
+    <dependency>
+      <groupId>com.yahoo.datasketches</groupId>
+      <artifactId>sketches-core</artifactId>
+      <version>0.4.1</version>
+    </dependency>
 
   </dependencies>
 
