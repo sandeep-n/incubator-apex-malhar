@@ -79,8 +79,21 @@ public class HyperloglogOperator extends BaseOperator
     public void process(Object input)
     {
 // can update hllSketch with long, double, String, byte[], int[], long[]
-      if (input instanceof String || input instanceof byte[] || input instanceof int[] || input instanceof long[]){
-        hllSketch.update(input);
+      if (input instanceof Long) {
+        hllSketch.update((Long) input);
+      } else if (input instanceof Double) {
+        hllSketch.update((Double) input);
+      } else if (input instanceof String) {
+        hllSketch.update((String) input);
+      } else if (input instanceof byte[]) {
+        hllSketch.update((byte[]) input);
+      } else if (input instanceof int[]) {
+        hllSketch.update((int[]) input);
+      } else if (input instanceof long[]) {
+        hllSketch.update((long[]) input);
+      } else {
+        throw new IllegalArgumentException("Hyperloglog sketch can only count objects of types " +
+          "Long, Double, String, byte[], int[], long[]");
       }
 
       double[] estimateWithError = {hllSketch.getEstimate(), hllSketch.getLowerBound(numStdDevs),
