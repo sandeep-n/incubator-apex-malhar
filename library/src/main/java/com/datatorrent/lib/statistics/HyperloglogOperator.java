@@ -22,15 +22,35 @@ import com.yahoo.sketches.hll.HllSketch;
 
 import com.datatorrent.api.DefaultInputPort;
 import com.datatorrent.api.DefaultOutputPort;
+import com.datatorrent.api.annotation.OperatorAnnotation;
 import com.datatorrent.common.util.BaseOperator;
 
-public class Hyperloglog extends BaseOperator
+/**
+ * An implementation of BaseOperator that estimates the cardinality (= number of distinct elements)
+ * of the input data stream, while using only a small amount of memory. <br>
+ * <p>
+ * <b>Input Port(s) : </b><br>
+ * <b>data : </b> Data values input port. <br>
+ * <br>
+ * <b>Output Port(s) : </b> <br>
+ * <b>median : </b>Cardinality output port. <br>
+ * <br>
+ * <b>StateFull : Yes</b>, value are aggregated over application window. <br>
+ * <b>Partitions : No</b>, will yield wrong results. <br>
+ * <br>+
+ * @displayName Hyperloglog
+ * @category Stats and Aggregations
+ * @tags Hyperloglog operator
+ * @since 0.3.4
+ */
+@OperatorAnnotation(partitionable = false)
+public class HyperloglogOperator extends BaseOperator
 {
 
   private transient HllSketch hllSketch = HllSketch.builder().build();
 
   /**
-   * Number of standard deviations determines the error bars
+   * Number of standard deviations determines the error bars. SD defaults to 2.0.
    */
   private double numStdDevs = 2.0;
 
@@ -45,22 +65,23 @@ public class Hyperloglog extends BaseOperator
   }
 
   /**
-   * Output port that emits number of distinct elements seen in stream so far, with error bars.
-   * Output is of the form {}
+   * Output port that emits number of distinct elements seen in stream so far, including error estimates.
+   * Output is of the form {cardinality_estimate, lower_bound, upper_bound}
    */
   public final transient DefaultOutputPort<double[]> countDistinct = new DefaultOutputPort<>();
 
   /**
-   * Input port takes a string. Data should be appropriately formatted, e.g., "126.0" and "126.00" are different strings
-   * representing the same number, so care should be taken to avoid overcounting.
+   * The hyperloglog data structure takes
    */
   public final transient DefaultInputPort<Object> data = new DefaultInputPort<Object>()
   {
     @Override
     public void process(Object input)
     {
-
-      hllSketch.update(input);
+// can update hllSketch with long, double, String, byte[], int[], long[]
+      if (input instanceof String || input instanceof byte[] || input instanceof int[] || input instanceof long[]){
+        hllSketch.update(input);
+      }
 
       double[] estimateWithError = {hllSketch.getEstimate(), hllSketch.getLowerBound(numStdDevs),
         hllSketch.getUpperBound(numStdDevs)};

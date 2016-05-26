@@ -30,7 +30,7 @@ public class HyperloglogTest
   @Test
   public void testEstimate()
   {
-    Hyperloglog hll = new Hyperloglog();
+    HyperloglogOperator hll = new HyperloglogOperator();
 
     CollectorTestSink<double[]> sink = new CollectorTestSink<>();
     TestUtils.setSink(hll.countDistinct, sink);
@@ -54,13 +54,16 @@ public class HyperloglogTest
   }
 
   @Test
-  public void testStdDev()
+  public void testErrorBars()
   {
-    Hyperloglog hll = new Hyperloglog();
+    HyperloglogOperator hll = new HyperloglogOperator();
 
     CollectorTestSink<double[]> sink = new CollectorTestSink<>();
     TestUtils.setSink(hll.countDistinct, sink);
 
+    /**
+     * Setup HyperloglogOperator. Standard deviation has default value 2.0.
+     */
     hll.setup(null);
     hll.beginWindow(0);
 
@@ -70,7 +73,7 @@ public class HyperloglogTest
 
     hll.endWindow();
 
-    double[] finalEstimateSD2 = sink.collectedTuples.get(sink.collectedTuples.size() - 1);
+    double[] errorBarsNarrow = sink.collectedTuples.get(sink.collectedTuples.size() - 1);
 
     /**
      * Repeat with a different value of standard deviation.
@@ -86,10 +89,16 @@ public class HyperloglogTest
 
     hll.endWindow();
 
-    double[] finalEstimateSD3 = sink.collectedTuples.get(sink.collectedTuples.size() - 1);
+    double[] errorBarsWide = sink.collectedTuples.get(sink.collectedTuples.size() - 1);
 
-    Assert.assertTrue("Error bars are wider when SD is increased", finalEstimateSD2[1] > finalEstimateSD3[1]
-      && finalEstimateSD2[2] < finalEstimateSD3[2]);
+    Assert.assertTrue("Error bars are wider when SD is increased", errorBarsNarrow[1] > errorBarsWide[1]
+      && errorBarsNarrow[2] < errorBarsWide[2]);
+  }
+
+  @Test
+  public void testInputTypes()
+  {
+    
   }
 
 }
